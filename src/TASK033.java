@@ -5,6 +5,7 @@ class Customer1{
         System.out.println("Constructor called");
     }
     void purchage_list(){
+
         System.out.println("cost of tomatoes in Customer class is "+ cost);
     }
 }

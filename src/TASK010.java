@@ -15,7 +15,7 @@ public class TASK010 {
             System.out.println(b + " is greater");
 
         }
-        else if(c>a && c>b)
+        else
         {
             System.out.println(c + " is greater");
 

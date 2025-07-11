@@ -9,9 +9,8 @@ public class TASK008 {
     }
     public static void main(String[] args)
     {
-        TASK008 cobj = new TASK008();
-        cobj.Accept();
-        cobj.display();
+        Accept();
+        display();
 
 
     }
