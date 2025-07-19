@@ -16,7 +16,6 @@ public class Day18_DigitByDigit {
             System.out.println("10 thousands digit is " + num.charAt(1));
             System.out.println("Lakhs digit is " + num.charAt(0));
         }
-
         scanner.close();
     }
 }
