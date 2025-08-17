@@ -1,0 +1,31 @@
+@startuml
+    participant Pax as p
+    actor Actor as a  #Green
+    boundary Boundary as b
+    control Controller as c
+    database Dbase as db
+    entity Table as t
+    collections Col as col
+    queue Queue as q
+
+    autonumber
+    p -[#red]> a : pax to actor
+    a -> p : ohh is it!
+
+    autonumber 100
+    b ->> p : boundary to pax
+    note left: plz make a note on left
+
+    c -\ p : control to pax
+    db \\- p : db to pax
+
+    autonumber 50 10
+    t //-- db : table to db
+    col ->o db : collection to db
+    note right: plz make a note
+
+    q <->o p : q to pax
+
+    Prasunamba -> Batch1 : learning uml
+    Batch1 -> Prasunamba : ok will learn
+@enduml

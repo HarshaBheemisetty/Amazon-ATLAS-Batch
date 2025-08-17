@@ -1,0 +1,7 @@
+@startuml
+actor User
+User -> System : Request
+System -> Database : Query
+Database --> System : Result
+System --> User : Response
+@enduml
