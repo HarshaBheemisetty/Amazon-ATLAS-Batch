@@ -1,0 +1,5 @@
+[
+  { "ID": 1, "Name": "Alice", "Address": "Hyderabad" },
+  { "ID": 2, "Name": "Bob", "Address": "Bangalore" },
+  { "ID": 3, "Name": "Charlie", "Address": "Delhi" }
+]
