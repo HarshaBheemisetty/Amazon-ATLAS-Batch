@@ -1,3 +1,10 @@
+import PROJECT_SCRS.EnrollmentService;
+import PROJECT_SCRS.Student;
+import PROJECT_SCRS.Course;
+import PROJECT_SCRS.EnrollmentRecord;
+import PROJECT_SCRS.enrollmentStatus;
+
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
