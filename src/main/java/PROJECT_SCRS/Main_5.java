@@ -17,32 +17,32 @@ public class Main_5 {
         WaitlistDAO waitlistDAO = new WaitlistDAO();
 
         // Create sample students
-        studentDAO.saveStudent(new Student("1", "Alice", "alice@email.com", "pass1"));
-        studentDAO.saveStudent(new Student("2", "Bob", "bob@email.com", "pass2"));
-        studentDAO.saveStudent(new Student("3", "Charlie", "charlie@email.com", "pass3"));
-        studentDAO.saveStudent(new Student("4", "David", "david@email.com", "pass4"));
+        studentDAO.saveStudent(new Student("S6", "Yeshu", "yeshu@email.com", "pass1"));
+        studentDAO.saveStudent(new Student("S7", "Vandana", "vandana@email.com", "pass2"));
+        studentDAO.saveStudent(new Student("S8", "Pravallika", "Pravallika@email.com", "pass3"));
+        studentDAO.saveStudent(new Student("S9", "Harsha", "Harsha@email.com", "pass4"));
 
         // Create sample courses
-        Course c101 = new Course("101", "DSA", 2, null, null);
-        Course c102 = new Course("102", "OOP", 1, null, null);
+        Course c101 = new Course("C4", "Java Full Stack", 2, null, null);
+        Course c102 = new Course("C5", "OOPS", 1, null, null);
         courseDAO.saveCourse(c101);
         courseDAO.saveCourse(c102);
 
         // Enroll students (automatic waitlisting)
-        enrollStudent("1", "101", studentDAO, courseDAO, enrollmentDAO, waitlistDAO);
-        enrollStudent("2", "101", studentDAO, courseDAO, enrollmentDAO, waitlistDAO);
-        enrollStudent("3", "101", studentDAO, courseDAO, enrollmentDAO, waitlistDAO);
-        enrollStudent("4", "101", studentDAO, courseDAO, enrollmentDAO, waitlistDAO);
+        enrollStudent("S6", "Java Full Stack", studentDAO, courseDAO, enrollmentDAO, waitlistDAO);
+        enrollStudent("S7", "Java Full Stack", studentDAO, courseDAO, enrollmentDAO, waitlistDAO);
+        enrollStudent("S8", "Java Full Stack", studentDAO, courseDAO, enrollmentDAO, waitlistDAO);
+        enrollStudent("S9", "Java Full Stack", studentDAO, courseDAO, enrollmentDAO, waitlistDAO);
 
-        enrollStudent("2", "102", studentDAO, courseDAO, enrollmentDAO, waitlistDAO);
-        enrollStudent("3", "102", studentDAO, courseDAO, enrollmentDAO, waitlistDAO);
+        enrollStudent("S7", "OOPS", studentDAO, courseDAO, enrollmentDAO, waitlistDAO);
+        enrollStudent("S8", "OOPS", studentDAO, courseDAO, enrollmentDAO, waitlistDAO);
 
         // Print current enrollments and waitlists
         printStatus(enrollmentDAO, waitlistDAO);
 
         // Drop a student → triggers waitlist promotion
         System.out.println("\n--- Dropping Bob from DSA ---");
-        dropStudent("2", "101", studentDAO, courseDAO, enrollmentDAO, waitlistDAO);
+        dropStudent("S6", "Java Full Stack", studentDAO, courseDAO, enrollmentDAO, waitlistDAO);
 
         // Print final enrollments and waitlists after promotion
         printStatus(enrollmentDAO, waitlistDAO);

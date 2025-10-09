@@ -55,7 +55,7 @@ public class MainApp {
                         if (loggedInStudent != null) {
                             System.out.println("✅ Welcome " + loggedInStudent.getName() + "!");
                         } else {
-                            System.out.println("❌ Invalid credentials");
+                            System.out.println("Invalid credentials");
                         }
                     }
                     case 3 -> {
@@ -100,7 +100,7 @@ public class MainApp {
                         String cid = sc.nextLine();
                         Course course = courseDAO.getCourse(cid);
                         if (course == null) {
-                            System.out.println("❌ Course not found.");
+                            System.out.println("Course not found.");
                             break;
                         }
                         if (course.getEnrolledCount() < course.getMaxCapacity()) {
@@ -108,10 +108,10 @@ public class MainApp {
                             enrollmentDAO.saveEnrollment(
                                     new EnrollmentRecord(loggedInStudent, course, enrollmentStatus.ENROLLED)
                             );
-                            System.out.println("✅ Enrolled in " + course.getCourseName());
+                            System.out.println("nrolled in " + course.getCourseName());
                         } else {
                             waitlistDAO.addToWaitlist(loggedInStudent.getStudentId(), course.getCourseId());
-                            System.out.println("⚠️ Course full, added to waitlist.");
+                            System.out.println("Course full, added to waitlist.");
                         }
                     }
                     case 3 -> {
@@ -119,7 +119,7 @@ public class MainApp {
                         String cid = sc.nextLine();
                         Course course = courseDAO.getCourse(cid);
                         if (course == null) {
-                            System.out.println("❌ Course not found.");
+                            System.out.println("Course not found.");
                             break;
                         }
                         EnrollmentRecord record = enrollmentDAO.getEnrollment(
@@ -128,7 +128,7 @@ public class MainApp {
                         if (record != null && record.getStatus() == enrollmentStatus.ENROLLED) {
                             record.setStatus(enrollmentStatus.DROPPED);
                             course.decrementEnrolledCount();
-                            System.out.println("✅ Dropped from " + course.getCourseName());
+                            System.out.println("Dropped from " + course.getCourseName());
 
                             // Promote first from waitlist
                             List<WaitlistEntry> waitlist = waitlistDAO.getWaitlistForCourse(cid);
@@ -144,7 +144,7 @@ public class MainApp {
                             }
                         } else {
                             waitlistDAO.removeFromWaitlist(loggedInStudent.getStudentId(), cid);
-                            System.out.println("⚠️ Removed from waitlist.");
+                            System.out.println("Removed from waitlist.");
                         }
                     }
                     case 4 -> {
@@ -157,7 +157,7 @@ public class MainApp {
                     }
                     case 6 -> {
                         loggedInStudent = null;
-                        System.out.println("👋 Logged out successfully.");
+                        System.out.println("Logged out successfully.");
                     }
                     default -> System.out.println("Invalid choice!");
                 }

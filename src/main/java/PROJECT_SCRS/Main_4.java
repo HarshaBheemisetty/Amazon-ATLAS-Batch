@@ -14,12 +14,12 @@ public class Main_4 {
         EnrollmentDAO enrollmentDAO = new EnrollmentDAO(client);
 
         // Sample data
-        Student s1 = new Student("S100", "Alice", "alice@example.com", "pass1");
+        Student s1 = new Student("S4", "Athulitha", "athulitha@example.com", "pass1");
         studentDAO.saveStudent(s1);
-        Student s2 = new Student("S101", "Bob", "bob@example.com", "pass2");
+        Student s2 = new Student("S5", "Ram", "Ram@example.com", "pass2");
         studentDAO.saveStudent(s2);
 
-        Course c1 = new Course("C101", "DSA", 2, LocalDate.now(), LocalDate.now().plusMonths(3));
+        Course c1 = new Course("C3", "DSA", 2, LocalDate.now(), LocalDate.now().plusMonths(3));
         courseDAO.saveCourse(c1);
 
         Scanner sc = new Scanner(System.in);
