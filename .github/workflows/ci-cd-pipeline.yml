@@ -70,4 +70,5 @@ jobs:
         run: echo "USE_LOCAL_DB=true" >> $GITHUB_ENV
 
       - name: ☕ Run DataInsertion class (create tables & seed data)
-        run: mvn exec:java -Dexec.mainClass="PROJECT_SCRS.DataInsertion"
+        run: mvn exec:java -Dexec.mainClass="PROJECT_SCRS.DataInsertion" -DskipTests
+
