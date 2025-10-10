@@ -69,8 +69,5 @@ jobs:
       - name: 🌱 Set environment variable for local DB
         run: echo "USE_LOCAL_DB=true" >> $GITHUB_ENV
 
-      - name: ☕ Compile Java project
-        run: javac -d bin src/PROJECT_SCRS/*.java
-
-      - name: 🏗️ Run DataInsertion class (create tables & seed data)
-        run: java -cp bin PROJECT_SCRS.DataInsertion
+      - name: ☕ Run DataInsertion class (create tables & seed data)
+        run: mvn exec:java -Dexec.mainClass="PROJECT_SCRS.DataInsertion"
