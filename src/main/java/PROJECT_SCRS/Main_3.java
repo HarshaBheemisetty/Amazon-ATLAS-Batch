@@ -7,7 +7,8 @@ public class Main_3 {
     public static void main(String[] args) {
 
         // Initialize Enrollment Service
-        EnrollmentService enrollmentService = new EnrollmentService();
+        // Since this is standalone, we can pass null for DAO dependencies for testing
+        EnrollmentService enrollmentService = new EnrollmentService(null, null, null);
 
         // Create students
         enrollmentService.createStudent("S1", "Alice", "alice@example.com", "pwd123");
@@ -75,6 +76,7 @@ public class Main_3 {
 
                 case 5 -> {
                     System.out.println("Exiting...");
+                    sc.close();
                     return;
                 }
 

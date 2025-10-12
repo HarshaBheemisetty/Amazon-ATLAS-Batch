@@ -1,5 +1,4 @@
 package PROJECT_SCRS;
-
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
 
@@ -102,4 +101,32 @@ public class EnrollmentDAO {
             System.err.println("Error fetching enrollments for student: " + e.getMessage());
         }
     }
+
+    // ------------------ COUNT ENROLLMENTS FOR A COURSE ------------------
+    // ------------------ COUNT ENROLLMENTS FOR A COURSE ------------------
+    public int countEnrollmentsForCourse(String courseId) {
+        try {
+            ScanRequest scanRequest = ScanRequest.builder()
+                    .tableName(tableName)
+                    .build();
+
+            ScanResponse scanResponse = client.scan(scanRequest);
+
+            int count = 0;
+            for (Map<String, AttributeValue> item : scanResponse.items()) {
+                String cId = item.get("courseId").s();
+                // Count all enrollments regardless of status
+                if (cId.equals(courseId)) {
+                    count++;
+                }
+            }
+            return count;
+
+        } catch (Exception e) {
+            System.err.println("Error counting enrollments for course " + courseId + ": " + e.getMessage());
+            return 0;
+        }
+    }
+
 }
+

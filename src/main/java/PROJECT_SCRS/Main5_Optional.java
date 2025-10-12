@@ -6,7 +6,7 @@ import java.time.LocalDate;
 public class Main5_Optional {
     public static void main(String[] args) {
         // Initialize service
-        EnrollmentService service = new EnrollmentService();
+        EnrollmentService service = new EnrollmentService(null, null,null);
 
         /* ------------------ Step 1: Create Students ------------------ */
         Student s1 = service.createStudent("S101", "Alice", "alice@example.com", "pass123");

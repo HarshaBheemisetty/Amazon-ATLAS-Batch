@@ -1,53 +1,56 @@
 package PROJECT_SCRS;
-
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-
+import java.time.LocalDate;
 import java.util.List;
 
 public class Main_5 {
 
     public static void main(String[] args) {
-        // Initialize DynamoDB client (can be local or AWS)
         DynamoDbClient client = DynamoDBConfig.getClient();
 
-        // Initialize DAOs
+        // DAOs
         StudentDAO studentDAO = new StudentDAO(client);
         CourseDAO courseDAO = new CourseDAO(client);
         EnrollmentDAO enrollmentDAO = new EnrollmentDAO(client);
         WaitlistDAO waitlistDAO = new WaitlistDAO();
 
-        // Create sample students
+        // Sample students
         studentDAO.saveStudent(new Student("S6", "Yeshu", "yeshu@email.com", "pass1"));
         studentDAO.saveStudent(new Student("S7", "Vandana", "vandana@email.com", "pass2"));
-        studentDAO.saveStudent(new Student("S8", "Pravallika", "Pravallika@email.com", "pass3"));
-        studentDAO.saveStudent(new Student("S9", "Harsha", "Harsha@email.com", "pass4"));
+        studentDAO.saveStudent(new Student("S8", "Pravallika", "pravallika@email.com", "pass3"));
+        studentDAO.saveStudent(new Student("S9", "Harsha", "harsha@email.com", "pass4"));
 
-        // Create sample courses
-        Course c101 = new Course("C4", "Java Full Stack", 2, null, null);
-        Course c102 = new Course("C5", "OOPS", 1, null, null);
+        // Sample courses with start and end dates
+        LocalDate start1 = LocalDate.now();
+        LocalDate end1 = start1.plusMonths(3);
+        Course c101 = new Course("C4", "Java Full Stack", 2, 0, start1, end1);
+
+        LocalDate start2 = LocalDate.now();
+        LocalDate end2 = start2.plusMonths(3);
+        Course c102 = new Course("C5", "OOPS", 1, 0, start2, end2);
+
         courseDAO.saveCourse(c101);
         courseDAO.saveCourse(c102);
 
-        // Enroll students (automatic waitlisting)
-        enrollStudent("S6", "Java Full Stack", studentDAO, courseDAO, enrollmentDAO, waitlistDAO);
-        enrollStudent("S7", "Java Full Stack", studentDAO, courseDAO, enrollmentDAO, waitlistDAO);
-        enrollStudent("S8", "Java Full Stack", studentDAO, courseDAO, enrollmentDAO, waitlistDAO);
-        enrollStudent("S9", "Java Full Stack", studentDAO, courseDAO, enrollmentDAO, waitlistDAO);
+        // Enroll students
+        enrollStudent("S6", "C4", studentDAO, courseDAO, enrollmentDAO, waitlistDAO);
+        enrollStudent("S7", "C4", studentDAO, courseDAO, enrollmentDAO, waitlistDAO);
+        enrollStudent("S8", "C4", studentDAO, courseDAO, enrollmentDAO, waitlistDAO);
+        enrollStudent("S9", "C4", studentDAO, courseDAO, enrollmentDAO, waitlistDAO);
 
-        enrollStudent("S7", "OOPS", studentDAO, courseDAO, enrollmentDAO, waitlistDAO);
-        enrollStudent("S8", "OOPS", studentDAO, courseDAO, enrollmentDAO, waitlistDAO);
+        enrollStudent("S7", "C5", studentDAO, courseDAO, enrollmentDAO, waitlistDAO);
+        enrollStudent("S8", "C5", studentDAO, courseDAO, enrollmentDAO, waitlistDAO);
 
-        // Print current enrollments and waitlists
+        // Print current enrollments
         printStatus(enrollmentDAO, waitlistDAO);
 
         // Drop a student → triggers waitlist promotion
-        System.out.println("\n--- Dropping Bob from DSA ---");
-        dropStudent("S6", "Java Full Stack", studentDAO, courseDAO, enrollmentDAO, waitlistDAO);
+        System.out.println("\n--- Dropping S6 from Java Full Stack ---");
+        dropStudent("S6", "C4", studentDAO, courseDAO, enrollmentDAO, waitlistDAO);
 
-        // Print final enrollments and waitlists after promotion
+        // Print final enrollments and waitlists
         printStatus(enrollmentDAO, waitlistDAO);
 
-        // Close DynamoDB client
         client.close();
     }
 
@@ -82,10 +85,7 @@ public class Main_5 {
         Student student = studentDAO.getStudent(studentId);
         Course course = courseDAO.getCourse(courseId);
 
-        if (student == null || course == null) {
-            System.out.println("Invalid student or course ID!");
-            return;
-        }
+        if (student == null || course == null) return;
 
         EnrollmentRecord record = enrollmentDAO.getEnrollment(studentId + "#" + courseId, student, course);
 
@@ -101,11 +101,9 @@ public class Main_5 {
                 waitlistDAO.removeFromWaitlist(promoted.getStudentId(), promoted.getCourseId());
                 enrollStudent(promoted.getStudentId(), promoted.getCourseId(),
                         studentDAO, courseDAO, enrollmentDAO, waitlistDAO);
-                System.out.println("Promoted student " + promoted.getStudentId() + " from waitlist to enrolled in " + course.getCourseName());
+                System.out.println("Promoted " + promoted.getStudentId() + " from waitlist to enrolled in " + course.getCourseName());
             }
-
         } else {
-            // Remove from waitlist if not enrolled
             waitlistDAO.removeFromWaitlist(studentId, courseId);
             System.out.println("Removed " + student.getName() + " from waitlist for " + course.getCourseName());
         }

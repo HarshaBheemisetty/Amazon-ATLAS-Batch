@@ -1,7 +1,5 @@
 package PROJECT_SCRS;
-
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-
 import java.time.LocalDate;
 import java.util.Scanner;
 
@@ -13,13 +11,16 @@ public class Main_4 {
         CourseDAO courseDAO = new CourseDAO(client);
         EnrollmentDAO enrollmentDAO = new EnrollmentDAO(client);
 
-        // Sample data
+        // Sample students
         Student s1 = new Student("S4", "Athulitha", "athulitha@example.com", "pass1");
         studentDAO.saveStudent(s1);
-        Student s2 = new Student("S5", "Ram", "Ram@example.com", "pass2");
+        Student s2 = new Student("S5", "Ram", "ram@example.com", "pass2");
         studentDAO.saveStudent(s2);
 
-        Course c1 = new Course("C3", "DSA", 2, LocalDate.now(), LocalDate.now().plusMonths(3));
+        // Sample course with proper dates
+        LocalDate start = LocalDate.now();
+        LocalDate end = start.plusMonths(3);
+        Course c1 = new Course("C3", "DSA", 2, 0, start, end);
         courseDAO.saveCourse(c1);
 
         Scanner sc = new Scanner(System.in);
@@ -46,7 +47,6 @@ public class Main_4 {
                     continue;
                 }
 
-                // Seat availability check
                 if(co.getEnrolledCount() < co.getMaxCapacity()) {
                     co.incrementEnrolledCount();
                     enrollmentDAO.saveEnrollment(new EnrollmentRecord(st, co, enrollmentStatus.ENROLLED));

@@ -1,27 +1,48 @@
 package PROJECT_SCRS;
-
 import java.time.LocalDate;
 import java.util.*;
 
 public class EnrollmentService {
+
+    private final StudentDAO studentDAO;
+    private final CourseDAO courseDAO;
+    private final EnrollmentDAO enrollmentDAO;
+    private final WaitlistManager waitlistManager = new WaitlistManager(); // Day 6 Queue-based waitlist
+
+    // In-memory snapshots
     private final Map<String, Student> students = new HashMap<>();
     private final Map<String, Course> courses = new HashMap<>();
     private final Map<String, Map<String, EnrollmentRecord>> enrollments = new HashMap<>();
-    private final WaitlistManager waitlistManager = new WaitlistManager(); // Day 6 Queue-based waitlist
 
-    /* ---------------- Student & Course management ---------------- */
+    public EnrollmentService(StudentDAO studentDAO, CourseDAO courseDAO, EnrollmentDAO enrollmentDAO) {
+        this.studentDAO = studentDAO;
+        this.courseDAO = courseDAO;
+        this.enrollmentDAO = enrollmentDAO;
+    }
+
+    /* ---------------- Student & Course Management ---------------- */
 
     public Student createStudent(String studentId, String name, String email, String password) {
-        if (students.containsKey(studentId)) return students.get(studentId);
-        Student s = new Student(studentId, name, email, password);
+        Student s = students.get(studentId);
+        if (s != null) return s;
+
+        s = new Student(studentId, name, email, password);
         students.put(studentId, s);
+
+        // Persist to DynamoDB
+        studentDAO.saveStudent(s);
         return s;
     }
 
     public Course createCourse(String courseId, String courseName, int capacity, LocalDate start, LocalDate end) {
-        if (courses.containsKey(courseId)) return courses.get(courseId);
-        Course c = new Course(courseId, courseName, capacity, start, end);
+        Course c = courses.get(courseId);
+        if (c != null) return c;
+
+        c = new Course(courseId, courseName, capacity, 0, start, end);
         courses.put(courseId, c);
+
+        // Persist to DynamoDB
+        courseDAO.saveCourse(c);
         return c;
     }
 
@@ -37,7 +58,7 @@ public class EnrollmentService {
         return new ArrayList<>(courses.values());
     }
 
-    /* ---------------- Enrollment operations ---------------- */
+    /* ---------------- Enrollment Operations ---------------- */
 
     public EnrollmentRecord enroll(String studentId, String courseId) {
         Student s = students.get(studentId);
@@ -59,6 +80,11 @@ public class EnrollmentService {
                         existing.setStatus(enrollmentStatus.WAITLISTED);
                         waitlistManager.addToWaitlist(courseId, studentId);
                     }
+
+                    // Persist updates
+                    enrollmentDAO.saveEnrollment(existing);
+                    studentDAO.saveStudent(s);
+                    courseDAO.updateEnrolledCount(courseId, c.getEnrolledStudentsSnapshot().size());
                     return existing;
                 }
                 return existing;
@@ -70,13 +96,17 @@ public class EnrollmentService {
                 c.enrollStudent(s);
                 record = new EnrollmentRecord(s, c, enrollmentStatus.ENROLLED);
             } else {
-                // Add to waitlist queue
                 record = new EnrollmentRecord(s, c, enrollmentStatus.WAITLISTED);
                 waitlistManager.addToWaitlist(courseId, studentId);
             }
 
             enrollments.computeIfAbsent(studentId, k -> new HashMap<>()).put(courseId, record);
             s.addEnrollment(record);
+
+            // Persist
+            enrollmentDAO.saveEnrollment(record);
+            studentDAO.saveStudent(s);
+            courseDAO.updateEnrolledCount(courseId, c.getEnrolledStudentsSnapshot().size());
 
             return record;
         }
@@ -89,12 +119,9 @@ public class EnrollmentService {
 
         synchronized (c) {
             EnrollmentRecord rec = getEnrollment(studentId, courseId);
-            if (rec == null) return false;
+            if (rec == null || rec.getStatus() == enrollmentStatus.DROPPED) return false;
 
-            enrollmentStatus prev = rec.getStatus();
-            if (prev == enrollmentStatus.DROPPED) return false;
-
-            if (prev == enrollmentStatus.ENROLLED) {
+            if (rec.getStatus() == enrollmentStatus.ENROLLED) {
                 c.dropStudent(s);
                 rec.setStatus(enrollmentStatus.DROPPED);
                 s.removeEnrollment(rec);
@@ -116,20 +143,24 @@ public class EnrollmentService {
                         }
                         System.out.printf("Promotion: student %s promoted from waitlist to ENROLLED in course %s%n",
                                 promoteeId, courseId);
+
+                        // Persist promoted student
+                        enrollmentDAO.saveEnrollment(pRec);
+                        studentDAO.saveStudent(promotee);
                     }
                 }
-                return true;
-
-            } else if (prev == enrollmentStatus.WAITLISTED) {
+            } else if (rec.getStatus() == enrollmentStatus.WAITLISTED) {
                 waitlistManager.removeFromWaitlist(courseId, studentId);
                 rec.setStatus(enrollmentStatus.DROPPED);
                 s.removeEnrollment(rec);
-                return true;
-            } else {
-                rec.setStatus(enrollmentStatus.DROPPED);
-                s.removeEnrollment(rec);
-                return true;
             }
+
+            // Persist drop
+            enrollmentDAO.saveEnrollment(rec);
+            studentDAO.saveStudent(s);
+            courseDAO.updateEnrolledCount(courseId, c.getEnrolledStudentsSnapshot().size());
+
+            return true;
         }
     }
 
@@ -165,8 +196,17 @@ public class EnrollmentService {
             System.out.printf("  Capacity: %d, Enrolled: %d, Seats left: %d%n",
                     c.getMaxCapacity(), c.getEnrolledStudentsSnapshot().size(), c.getAvailableSeats());
             System.out.println("  Enrolled students: " + c.getEnrolledStudentsSnapshot());
-            // Day 6: queue-based waitlist
             System.out.println("  Waitlist: " + waitlistManager.getWaitlist(courseId));
         }
+    }
+
+    /* ---------------- Getters for MainApp ---------------- */
+
+    public WaitlistManager getWaitlistManager() {
+        return waitlistManager;
+    }
+
+    public Map<String, Map<String, EnrollmentRecord>> getEnrollmentsMap() {
+        return enrollments;
     }
 }

@@ -4,55 +4,74 @@ import java.time.LocalDate;
 import java.util.*;
 
 /**
- * Thread-safe Course class.
- * Combines simple Day3 fields with advanced Day4 features like enrolled students and waitlist.
+ * Thread-safe Course class with enrolled count and waitlist.
  */
 public class Course {
     private final String courseId;
     private String name;
     private final int capacity;
-    private int enrolledCount; // keeps Day3 compatibility
+    private int enrolledCount; // tracks number of enrolled students
     private LocalDate startDate;
     private LocalDate endDate;
 
     private final Set<Student> enrolledStudents = new LinkedHashSet<>();
     private final Queue<Student> waitlist = new ArrayDeque<>();
 
-    public Course(String courseId, String name, int capacity, LocalDate startDate, LocalDate endDate) {
-        this.courseId = Objects.requireNonNull(courseId);
-        this.name = name;
+    // Constructor
+    public Course(String courseId, String name, int capacity, int enrolledCount,
+                  LocalDate startDate, LocalDate endDate) {
+        this.courseId = Objects.requireNonNull(courseId, "Course ID cannot be null");
+        this.name = (name != null && !name.isEmpty()) ? name : "N/A";
         this.capacity = Math.max(0, capacity);
-        this.enrolledCount = 0;
-        this.startDate = startDate;
-        this.endDate = endDate;
+        this.enrolledCount = Math.max(0, enrolledCount);
+        this.startDate = (startDate != null) ? startDate : LocalDate.now();
+        this.endDate = (endDate != null) ? endDate : this.startDate.plusMonths(3);
     }
 
-    // --- Day3 getters ---
+    // Getters
     public String getCourseId() { return courseId; }
     public String getCourseName() { return name; }
     public int getMaxCapacity() { return capacity; }
     public int getEnrolledCount() { return enrolledCount; }
+    public LocalDate getStartDate() { return startDate; }
+    public LocalDate getEndDate() { return endDate; }
 
-    public LocalDate getStartDate() {
-        return startDate;
+    // Setters
+    public synchronized void setCourseName(String name) {
+        if (name != null && !name.isEmpty()) this.name = name;
     }
 
-    public LocalDate getEndDate() {
-        return endDate;
+    public synchronized void setStartDate(LocalDate startDate) {
+        if (startDate != null) this.startDate = startDate;
     }
 
-    public synchronized void incrementEnrolledCount() { enrolledCount++; }
-    public void decrementEnrolledCount() { enrolledCount--; }
+    public synchronized void setEndDate(LocalDate endDate) {
+        if (endDate != null) this.endDate = endDate;
+    }
 
+    // **Added setter for enrolledCount**
+    public synchronized void setEnrolledCount(int count) {
+        if (count >= 0 && count <= capacity) {
+            this.enrolledCount = count;
+        }
+    }
 
-    // --- Advanced Day4 methods ---
+    // Increment/decrement enrolled count safely
+    public synchronized void incrementEnrolledCount() {
+        if (enrolledCount < capacity) enrolledCount++;
+    }
+
+    public synchronized void decrementEnrolledCount() {
+        if (enrolledCount > 0) enrolledCount--;
+    }
+
+    // Waitlist & enrollment
+    public synchronized boolean isFull() {
+        return enrolledStudents.size() >= capacity;
+    }
 
     public synchronized int getAvailableSeats() {
         return capacity - enrolledStudents.size();
-    }
-
-    public synchronized boolean isFull() {
-        return enrolledStudents.size() >= capacity;
     }
 
     public synchronized boolean enrollStudent(Student s) {
@@ -60,10 +79,9 @@ public class Course {
         if (enrolledStudents.contains(s)) return true;
         if (!isFull()) {
             enrolledStudents.add(s);
-            enrolledCount++; // keep Day3 counter updated
+            enrolledCount++;
             return true;
         }
-        // if full, automatically add to waitlist
         addToWaitlist(s);
         return false;
     }
@@ -72,8 +90,7 @@ public class Course {
         if (s == null) return false;
         boolean removed = enrolledStudents.remove(s);
         if (removed) {
-            enrolledCount--; // update Day3 counter
-            // Promote next student from waitlist
+            decrementEnrolledCount();
             if (!waitlist.isEmpty()) {
                 Student next = waitlist.poll();
                 enrollStudent(next);
@@ -83,19 +100,14 @@ public class Course {
     }
 
     public synchronized void addToWaitlist(Student s) {
-        if (s == null) return;
-        if (waitlist.contains(s)) return;
-        waitlist.add(s);
-    }
-
-    public synchronized Student pollFromWaitlist() {
-        return waitlist.poll();
+        if (s != null && !waitlist.contains(s)) waitlist.add(s);
     }
 
     public synchronized boolean removeFromWaitlist(Student s) {
         return waitlist.remove(s);
     }
 
+    // Snapshots
     public synchronized List<Student> getWaitlistSnapshot() {
         return Collections.unmodifiableList(new ArrayList<>(waitlist));
     }
@@ -106,7 +118,8 @@ public class Course {
 
     @Override
     public String toString() {
-        return String.format("%s (ID:%s) — seats: %d/%d, waitlist: %d",
-                name, courseId, enrolledStudents.size(), capacity, waitlist.size());
+        return String.format("%s (ID:%s) — seats: %d/%d, waitlist: %d, Start: %s, End: %s",
+                name, courseId, enrolledStudents.size(), capacity, waitlist.size(),
+                startDate, endDate);
     }
 }

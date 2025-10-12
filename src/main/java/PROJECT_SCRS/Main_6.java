@@ -4,7 +4,8 @@ import java.time.LocalDate;
 
 public class Main_6 {
     public static void main(String[] args) {
-        EnrollmentService service = new EnrollmentService();
+        // Initialize Enrollment Service (standalone, DAOs null)
+        EnrollmentService service = new EnrollmentService(null, null, null);
 
         // ---------------- Create Students ----------------
         service.createStudent("S1", "Alice", "alice@example.com", "pass123");
